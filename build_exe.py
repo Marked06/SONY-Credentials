@@ -1,170 +1,156 @@
+#!/usr/bin/env python3
 """
-PyInstaller Build Script for SONY Credentials
-Generates standalone SONY_Credentials.exe executable
+SONY Credentials - PyInstaller Build Script
+Creates standalone Windows executable without Python dependency
 """
 
-import os
 import sys
+import os
 import subprocess
+import shutil
 from pathlib import Path
 
-def build_exe():
-    """Build standalone Windows executable using PyInstaller"""
-
-    print("=" * 70)
-    print("🔨 SONY Credentials - Building Standalone Windows Executable")
-    print("=" * 70)
-
-    # Get project directory
-    project_dir = Path(__file__).parent
-    print(f"\n📁 Project Directory: {project_dir}")
-
-    # Check if PyInstaller is installed
-    print("\n📦 Checking dependencies...")
+def check_pyinstaller():
+    """Check if PyInstaller is installed"""
     try:
         import PyInstaller
-        print("  ✓ PyInstaller found")
+        return True
     except ImportError:
-        print("  ✗ PyInstaller not found. Installing...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller"])
-
-    # Check other required packages
-    required_packages = ['flask', 'pandas', 'reportlab']
-    for package in required_packages:
-        try:
-            __import__(package)
-            print(f"  ✓ {package} found")
-        except ImportError:
-            print(f"  ✗ {package} not found")
-            return False
-
-    # PyInstaller command
-    print("\n🔧 Building executable...")
-    print("   (This may take 2-3 minutes...)\n")
-
-    pyinstaller_cmd = [
-        sys.executable, "-m", "PyInstaller",
-        "--name=SONY_Credentials",
-        "--onefile",
-        "--windowed",
-        "--icon=NONE",
-        "--add-data", f"{project_dir}/templates:templates",
-        "--add-data", f"{project_dir}/templates/Credential_Template.xlsx:templates",
-        "--hidden-import=flask",
-        "--hidden-import=pandas",
-        "--hidden-import=openpyxl",
-        "--hidden-import=reportlab",
-        "--collect-all=reportlab",
-        "--noconfirm",
-        "--distpath", str(project_dir / "dist"),
-        "--buildpath", str(project_dir / "build"),
-        "--specpath", str(project_dir),
-        str(project_dir / "app.py")
-    ]
-
-    try:
-        result = subprocess.run(pyinstaller_cmd, capture_output=True, text=True)
-
-        if result.returncode != 0:
-            print("❌ Build failed!")
-            print("\nError output:")
-            print(result.stderr)
-            return False
-
-        # Check if exe was created
-        exe_path = project_dir / "dist" / "SONY_Credentials.exe"
-
-        if exe_path.exists():
-            file_size = exe_path.stat().st_size / (1024 * 1024)  # Convert to MB
-            print("✅ Build successful!")
-            print(f"\n📦 Executable Details:")
-            print(f"   Location: {exe_path}")
-            print(f"   Size: {file_size:.1f} MB")
-            print(f"\n🎯 Next Steps:")
-            print(f"   1. Copy SONY_Credentials.exe to your deployment location")
-            print(f"   2. Test on Windows machine (no Python required!)")
-            print(f"   3. Distribute to event staff")
-            return True
-        else:
-            print("❌ Executable not created")
-            return False
-
-    except Exception as e:
-        print(f"❌ Build error: {str(e)}")
         return False
 
-def create_launcher_script():
-    """Create a batch script to launch the app"""
+def check_dependencies():
+    """Check if all required dependencies are installed"""
+    required = ['flask', 'pandas', 'reportlab', 'openpyxl', 'requests']
+    missing = []
+    
+    for package in required:
+        try:
+            __import__(package)
+        except ImportError:
+            missing.append(package)
+    
+    return missing
 
-    project_dir = Path(__file__).parent
-    launcher_path = project_dir / "SONY_Credentials.bat"
-
-    launcher_content = """@echo off
-REM SONY Credentials Launcher
-REM Opens the web browser to the credential generator
-
-echo Starting SONY Credentials...
-start http://localhost:8000
-SONY_Credentials.exe
-pause
-"""
-
-    with open(launcher_path, 'w') as f:
-        f.write(launcher_content)
-
-    print(f"\n📝 Created launcher script: {launcher_path}")
+def install_dependencies():
+    """Install missing dependencies"""
+    missing = check_dependencies()
+    if missing:
+        print(f"\n[INSTALLING] Missing packages: {', '.join(missing)}")
+        for package in missing:
+            print(f"  Installing {package}...")
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install', package])
 
 def main():
     """Main build process"""
-
-    # Check Python version
-    print(f"\n✓ Python Version: {sys.version.split()[0]}")
-    print(f"✓ Platform: {sys.platform}")
-
-    if sys.platform != "win32" and sys.platform != "cygwin":
-        print("\n⚠️  Warning: Building on non-Windows platform")
-        print("   The executable will be created but may not run on Windows")
-        response = input("   Continue anyway? (y/n): ")
-        if response.lower() != 'y':
+    try:
+        print("\n" + "="*60)
+        print("  SONY Credentials - PyInstaller Build")
+        print("="*60)
+        
+        # Check Python version
+        print(f"\n[OK] Python Version: {sys.version.split()[0]}")
+        print(f"[OK] Platform: {sys.platform}")
+        
+        # Check if PyInstaller is installed
+        if not check_pyinstaller():
+            print("\n[ERROR] PyInstaller not installed")
+            print("Install with: pip install PyInstaller")
             return False
-
-    # Build the executable
-    success = build_exe()
-
-    if success:
-        # Create launcher script
-        create_launcher_script()
-
-        print("\n" + "=" * 70)
-        print("✅ BUILD COMPLETE!")
-        print("=" * 70)
-        print("\n📊 Summary:")
-        print("  • Standalone Windows executable created")
-        print("  • No Python installation required")
-        print("  • No external dependencies needed")
-        print("  • Ready for distribution")
-        print("\n🚀 To use:")
-        print("  1. Run: SONY_Credentials.exe")
-        print("  2. Browser opens to http://localhost:8000")
-        print("  3. Generate credentials as normal")
-        print("\n💡 Tips:")
-        print("  • Run from any directory on Windows")
-        print("  • No installation needed")
-        print("  • Works even with threadlock security software")
-        print("  • Requires Windows 7 or newer")
-
+        
+        print("[OK] PyInstaller found")
+        
+        # Check and install dependencies
+        print("\n[CHECKING] Dependencies...")
+        missing = check_dependencies()
+        if missing:
+            print(f"[WARNING] Missing: {', '.join(missing)}")
+            install_dependencies()
+        else:
+            print("[OK] All dependencies installed")
+        
+        # Get paths
+        project_root = Path(__file__).parent
+        app_py = project_root / 'app.py'
+        icon_file = project_root / 'icon.ico'
+        dist_dir = project_root / 'dist'
+        build_dir = project_root / 'build'
+        
+        # Check if app.py exists
+        if not app_py.exists():
+            print(f"\n[ERROR] app.py not found at {app_py}")
+            return False
+        
+        print(f"[OK] Found app.py")
+        
+        # Clean previous builds
+        print("\n[CLEANING] Previous build artifacts...")
+        if dist_dir.exists():
+            shutil.rmtree(dist_dir)
+        if build_dir.exists():
+            shutil.rmtree(build_dir)
+        print("[OK] Cleaned")
+        
+        # Build command
+        cmd = [
+            sys.executable, '-m', 'PyInstaller',
+            '--name=SONY_Credentials',
+            '--onefile',
+            '--windowed',
+            '--add-data=templates:templates',
+            '--add-data=branding:branding',
+            '--add-data=templates/Credential_Template.xlsx:templates',
+            '--collect-all=flask',
+            '--collect-all=reportlab',
+            '--hidden-import=flask',
+            '--hidden-import=pandas',
+            '--hidden-import=openpyxl',
+            '--hidden-import=reportlab',
+            '--hidden-import=requests',
+            '--distpath=dist',
+            '--buildpath=build',
+            str(app_py)
+        ]
+        
+        # Add icon if it exists
+        if icon_file.exists():
+            cmd.insert(-1, f'--icon={icon_file}')
+            print(f"[OK] Using icon: {icon_file}")
+        
+        # Run PyInstaller
+        print("\n[BUILDING] Creating executable...")
+        print("This may take 2-5 minutes...\n")
+        
+        result = subprocess.run(cmd, cwd=str(project_root))
+        
+        if result.returncode != 0:
+            print("\n[ERROR] Build failed")
+            return False
+        
+        # Check if exe was created
+        exe_file = dist_dir / 'SONY_Credentials.exe'
+        if not exe_file.exists():
+            print(f"\n[ERROR] Executable not found at {exe_file}")
+            return False
+        
+        # Get file size
+        size_mb = exe_file.stat().st_size / (1024 * 1024)
+        
+        print("\n" + "="*60)
+        print("  BUILD SUCCESSFUL!")
+        print("="*60)
+        print(f"\n[OK] Executable created: {exe_file}")
+        print(f"[OK] Size: {size_mb:.1f} MB")
+        print(f"\n[OK] Ready to use!")
+        print(f"[OK] Next step: Test the exe or build Windows installer")
+        
         return True
-    else:
-        print("\n❌ BUILD FAILED")
-        print("\nTroubleshooting:")
-        print("  1. Ensure all dependencies are installed:")
-        print("     pip install -r requirements.txt")
-        print("  2. Check PyInstaller is up to date:")
-        print("     pip install --upgrade pyinstaller")
-        print("  3. Try building again with verbose output:")
-        print("     python build_exe.py 2>&1 | tee build.log")
+        
+    except Exception as e:
+        print(f"\n[ERROR] Build failed: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     success = main()
     sys.exit(0 if success else 1)

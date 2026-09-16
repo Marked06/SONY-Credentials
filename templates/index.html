@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SONY Credential Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+        }
+
+        .upload-area p {
+            color: #666;
+            margin: 10px 0 0 0;
+            font-size: 14px;
+        }
+
+        .upload-area strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .file-info {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 4px;
+            color: #2e7d32;
+            font-size: 13px;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .event-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .event-type-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .event-btn {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .event-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .event-btn.active {
+            color: white;
+            border-color: #667eea;
+        }
+
+        .event-btn.summer.active {
+            background: linear-gradient(135deg, #ed2024, #ed2024);
+            border-color: #ed2024;
+        }
+
+        .event-btn.winter.active {
+            background: linear-gradient(135deg, #4a7abd, #21409a);
+            border-color: #4a7abd;
+        }
+
+        .event-btn.fall.active {
+            background: linear-gradient(135deg, #fdc225, #f26522);
+            border-color: #fdc225;
+        }
+
+        .event-btn.bowling.active {
+            background: linear-gradient(135deg, #9acc5c, #08753c);
+            border-color: #9acc5c;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            grid-column: span 2;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-generate:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-download {
+            background: #4caf50;
+            color: white;
+            grid-column: span 2;
+            display: none;
+        }
+
+        .btn-download:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-download.show {
+            display: block;
+        }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status-message.show {
+            display: block;
+        }
+
+        .status-message.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+
+        .status-message.error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+
+        .status-message.info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #2196f3;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .filter-section {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .filter-section.show {
+            display: block;
+        }
+
+        .filter-section h3 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .filter-group {
+            margin-bottom: 15px;
+        }
+
+        .filter-group label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: 400;
+            cursor: pointer;
+        }
+
+        .filter-group input[type="checkbox"],
+        .filter-group input[type="radio"] {
+            margin-right: 8px;
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .filter-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .record-preview {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+
+        .record-preview .record-item {
+            padding: 6px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .record-preview .record-item:last-child {
+            border-bottom: none;
+        }
+
+        .record-count {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .records-selection {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 12px;
+            max-height: 250px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .records-selection.show {
+            display: block;
+        }
+
+        .records-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .records-header span {
+            font-weight: 600;
+            color: #333;
+            font-size: 13px;
+        }
+
+        .select-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .select-buttons button {
+            padding: 4px 10px;
+            font-size: 11px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .select-buttons button:hover {
+            background: #764ba2;
+        }
+
+        .record-checkbox {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 12px;
+        }
+
+        .record-checkbox:last-child {
+            border-bottom: none;
+        }
+
+        .record-checkbox input[type="checkbox"] {
+            margin-right: 8px;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .record-checkbox label {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            cursor: pointer;
+            margin: 0;
+            font-weight: normal;
+        }
+
+        .record-name {
+            font-weight: 600;
+            color: #333;
+            margin-right: 12px;
+            min-width: 150px;
+        }
+
+        .record-details {
+            color: #666;
+            font-size: 11px;
+        }
+
+        .error-details {
+            background: #fff;
+            border: 1px solid #f44336;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 10px;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .error-suggestion {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 4px;
+            color: #856404;
+            font-size: 13px;
+        }
+
+        .error-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .error-section h4 {
+            color: #333;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .columns-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .column-list {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .column-list strong {
+            display: block;
+            margin-bottom: 6px;
+            color: #333;
+        }
+
+        .column-list ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .column-list li {
+            margin: 4px 0;
+            color: #666;
+        }
+
+        .warnings-list {
+            background: #fff9c4;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 8px;
+        }
+
+        .warnings-list ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .warnings-list li {
+            margin: 4px 0;
+            color: #f57f17;
+            font-size: 12px;
+        }
+
+        .data-quality {
+            background: #e8f5e9;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #2e7d32;
+        }
+
+        .btn-download-template {
+            background: #2196f3;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-download-template:hover {
+            background: #1976d2;
+        }
+    </style>
+    <script src="https://www.google.com/recaptcha/api.js"></script>
+    <script>
+        // reCAPTCHA helper function
+        async function getReCaptchaToken() {
+            try {
+                return await grecaptcha.execute('{{ recaptcha_site_key }}', { action: 'submit' });
+            } catch (error) {
+                console.warn('reCAPTCHA not available:', error);
+                return ''; // Allow request even if reCAPTCHA unavailable
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏅 SONY Credential Generator</h1>
+            <p>Create professional event credentials in seconds</p>
+        </div>
+
+        <form id="credentialForm">
+            <!-- File Upload -->
+            <div class="form-group">
+                <label>Step 1: Upload Spreadsheet</label>
+                <div class="upload-area" id="uploadArea">
+                    <strong>📁 Click to upload or drag & drop</strong>
+                    <p>Excel file (.xlsx) with participant data</p>
+                </div>
+                <input type="file" id="fileInput" accept=".xlsx,.xls" />
+                <div class="file-info" id="fileInfo"></div>
+            </div>
+
+            <!-- Event Name -->
+            <div class="form-group">
+                <label>Step 2: Event Details</label>
+                <div class="event-details">
+                    <input type="text" id="eventName" placeholder="Event Name (use | for 2 lines)" value="Special Olympics Event" required />
+                </div>
+                <p style="font-size: 12px; color: #999; margin-top: 5px;">💡 Tip: Use a pipe character | to split event name into 2 lines<br>Example: "2026 Summer|State Game"</p>
+            </div>
+
+            <!-- Event Type -->
+            <div class="form-group">
+                <label>Event Type</label>
+                <div class="event-type-selector">
+                    <button type="button" class="event-btn summer active" data-type="Summer">☀️ Summer</button>
+                    <button type="button" class="event-btn winter" data-type="Winter">❄️ Winter</button>
+                    <button type="button" class="event-btn fall" data-type="Fall">🍂 Fall</button>
+                    <button type="button" class="event-btn bowling" data-type="Bowling">🎳 Bowling</button>
+                </div>
+            </div>
+
+            <!-- Credential Sizing -->
+            <div class="form-group">
+                <label>Credential Layout</label>
+
+                <!-- Quick Presets -->
+                <div style="margin-bottom: 15px;">
+                    <p style="font-size: 12px; font-weight: 600; color: #333; margin-bottom: 8px;">Quick Presets:</p>
+                    <select id="sizingPreset" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        <option value="compact">📦 Compact - 0.10" margin, 0.15" spacing</option>
+                        <option value="standard" selected>📋 Standard - 0.30" margin, 0.20" spacing</option>
+                        <option value="spacious">📏 Spacious - 0.40" margin, 0.30" spacing</option>
+                    </select>
+                </div>
+
+                <!-- Custom Sizing Sliders -->
+                <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <p style="font-size: 12px; font-weight: 600; color: #333; margin-bottom: 12px;">Custom Sizing:</p>
+
+                    <!-- Page Margins Slider -->
+                    <div style="margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <label style="font-size: 12px; color: #666; font-weight: 500;">Page Margins</label>
+                            <span id="marginValue" style="font-size: 12px; color: #667eea; font-weight: 600;">0.30"</span>
+                        </div>
+                        <input type="range" id="marginSlider" min="0.10" max="0.50" step="0.05" value="0.30" style="width: 100%; cursor: pointer;">
+                        <p style="font-size: 11px; color: #999; margin-top: 4px;">Left, right, top, bottom margins around credentials</p>
+                    </div>
+
+                    <!-- Row Spacing Slider -->
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <label style="font-size: 12px; color: #666; font-weight: 500;">Row Spacing</label>
+                            <span id="spacingValue" style="font-size: 12px; color: #667eea; font-weight: 600;">0.20"</span>
+                        </div>
+                        <input type="range" id="spacingSlider" min="0.10" max="0.50" step="0.05" value="0.20" style="width: 100%; cursor: pointer;">
+                        <p style="font-size: 11px; color: #999; margin-top: 4px;">Space between credential rows</p>
+                    </div>
+                </div>
+
+                <!-- Live Preview -->
+                <div style="background: white; border: 2px solid #667eea; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                    <p style="font-size: 12px; font-weight: 600; color: #333; margin-bottom: 12px;">📋 Live Preview:</p>
+                    <canvas id="previewCanvas" width="100" height="130" style="border: 1px solid #ddd; border-radius: 4px; display: block; margin: 0 auto; background: white;"></canvas>
+                    <p style="font-size: 11px; color: #999; text-align: center; margin-top: 10px;">Actual size on letter paper (8.5" × 11")</p>
+                </div>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="filter-section" id="filterSection">
+                <h3>🔍 Step 3: Filter & Search (Optional)</h3>
+
+                <!-- Search by Name -->
+                <div class="filter-group">
+                    <input type="text" id="searchName" class="search-input" placeholder="Search by first or last name...">
+                </div>
+
+                <div class="filter-columns">
+                    <!-- Filter by Role -->
+                    <div class="filter-group">
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Filter by Role:</label>
+                        <div id="roleFilters"></div>
+                    </div>
+
+                    <!-- Filter by Delegation/Region -->
+                    <div class="filter-group">
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Filter by Region:</label>
+                        <div id="delegationFilters"></div>
+                    </div>
+                </div>
+
+                <!-- Sort Options -->
+                <div class="filter-group">
+                    <label style="display: block; font-weight: 600; margin-bottom: 8px;">Sort Order:</label>
+                    <select id="sortOrder">
+                        <option value="none">No sorting</option>
+                        <option value="alphabetical">A to Z (Last Name)</option>
+                        <option value="reverse">Z to A (Last Name)</option>
+                    </select>
+                </div>
+
+                <!-- Record Preview -->
+                <div class="record-preview" id="recordPreview" style="display: none;">
+                    <div style="margin-bottom: 8px;"><span class="record-count" id="matchCount">Matching records: 0</span></div>
+                    <div id="previewList"></div>
+                </div>
+
+                <!-- Records Selection -->
+                <div class="records-selection" id="recordsSelection">
+                    <div class="records-header">
+                        <span id="selectionCount">0 records selected</span>
+                        <div class="select-buttons">
+                            <button type="button" id="selectAllBtn">Select All</button>
+                            <button type="button" id="deselectAllBtn">Clear All</button>
+                        </div>
+                    </div>
+                    <div id="recordsList"></div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="button-group">
+                <button type="submit" class="btn-generate">🚀 Generate Credentials</button>
+                <button type="button" class="btn-download" id="downloadBtn">⬇️ Download PDF</button>
+            </div>
+        </form>
+
+        <!-- Status Message -->
+        <div class="status-message" id="statusMessage"></div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let selectedEventType = 'Summer';
+        let generatedPdfFile = null;
+        let availableRoles = [];
+        let availableDelegations = [];
+        let filteredRecords = [];
+        let selectedRecordIndices = [];
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const form = document.getElementById('credentialForm');
+        const eventNameInput = document.getElementById('eventName');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const filterSection = document.getElementById('filterSection');
+        const searchInput = document.getElementById('searchName');
+        const sortOrder = document.getElementById('sortOrder');
+        const recordsSelection = document.getElementById('recordsSelection');
+        const recordsList = document.getElementById('recordsList');
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const deselectAllBtn = document.getElementById('deselectAllBtn');
+        const selectionCount = document.getElementById('selectionCount');
+
+        // File upload handling
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFile(e.dataTransfer.files[0]);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFile(e.target.files[0]);
+        });
+
+        async function handleFile(file) {
+            if (!file) return;
+
+            selectedFile = file;
+            const formData = new FormData();
+            formData.append('file', file);
+
+            showStatus('Validating file...', 'info');
+
+            try {
+                const response = await fetch('/api/validate-file', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                console.log('Validation response:', result);
+
+                if (result.success) {
+                    fileInfo.textContent = `✅ ${file.name} (${result.rows} rows)`;
+                    fileInfo.classList.add('show');
+
+                    // Store available options
+                    availableRoles = result.roles || [];
+                    availableDelegations = result.delegations || [];
+                    console.log('Stored roles and delegations:', { roles: availableRoles, delegations: availableDelegations });
+
+                    // Populate filter options
+                    populateFilters();
+                    filterSection.classList.add('show');
+                    console.log('Filter section shown');
+
+                    let statusHtml = 'File validated successfully! Filters available below.';
+                    if (result.warnings && result.warnings.length > 0) {
+                        statusHtml += '<div class="error-section">';
+                        statusHtml += '<h4>⚠️ Data Quality Warnings</h4>';
+                        statusHtml += '<ul style="margin: 0; padding-left: 20px;">';
+                        result.warnings.forEach(warning => {
+                            statusHtml += `<li style="margin: 4px 0; color: #666; font-size: 13px;">${warning}</li>`;
+                        });
+                        statusHtml += '</ul></div>';
+                    }
+                    showStatus(statusHtml, 'success');
+                } else {
+                    displayDetailedError(result);
+                    selectedFile = null;
+                    filterSection.classList.remove('show');
+                    console.error('Validation failed:', result);
+                }
+            } catch (error) {
+                showStatus(`❌ ${error.message}`, 'error');
+                selectedFile = null;
+                filterSection.classList.remove('show');
+                console.error('Fetch error:', error);
+            }
+        }
+
+        function displayDetailedError(result) {
+            let errorHtml = `<div class="error-details">
+                <strong>❌ ${result.error}</strong>`;
+
+            // Show suggestion if available
+            if (result.suggestion) {
+                errorHtml += `<div class="error-suggestion">
+                    💡 ${result.suggestion}
+                </div>`;
+            }
+
+            // Show column mismatch details
+            if (result.required_columns && result.found_columns) {
+                errorHtml += `<div class="error-section">
+                    <h4>Column Requirements</h4>
+                    <div class="columns-comparison">
+                        <div class="column-list">
+                            <strong>✅ Required Columns:</strong>
+                            <ul>
+                                ${result.required_columns.map(col => `<li>${col}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="column-list">
+                            <strong>📋 Found Columns:</strong>
+                            <ul>
+                                ${result.found_columns.length > 0 ?
+                                    result.found_columns.map(col => `<li>${col}</li>`).join('') :
+                                    '<li><em>No columns found</em></li>'}
+                            </ul>
+                        </div>
+                    </div>`;
+
+                if (result.note) {
+                    errorHtml += `<div style="margin-top: 8px; padding: 8px; background: #fce4ec; border-radius: 4px; font-size: 12px; color: #c2185b;">
+                        📝 ${result.note}
+                    </div>`;
+                }
+                errorHtml += '</div>';
+            }
+
+            // Show warnings if any
+            if (result.warnings && result.warnings.length > 0) {
+                errorHtml += `<div class="error-section">
+                    <h4>⚠️ Warnings</h4>
+                    <div class="warnings-list">
+                        <ul>
+                            ${result.warnings.map(warning => `<li>${warning}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>`;
+            }
+
+            // Show data quality summary
+            if (result.data_quality) {
+                errorHtml += `<div class="error-section">
+                    <h4>📊 Data Quality Summary</h4>
+                    <div class="data-quality">
+                        Total Records: ${result.data_quality.total_records} |
+                        Complete Records: ${result.data_quality.complete_records}
+                    </div>
+                </div>`;
+            }
+
+            // Show download template button if needed
+            if (result.action === 'download_template') {
+                errorHtml += `<button type="button" class="btn-download-template" onclick="downloadTemplate()">
+                    ⬇️ Download Template
+                </button>`;
+            }
+
+            errorHtml += '</div>';
+            showStatus(errorHtml, 'error');
+        }
+
+        function downloadTemplate() {
+            window.location.href = '/api/download-template';
+        }
+
+        function populateFilters() {
+            // Populate Role filters
+            const roleFilters = document.getElementById('roleFilters');
+            roleFilters.innerHTML = '';
+
+            if (availableRoles.length === 0) {
+                roleFilters.innerHTML = '<p style="color: #999; font-size: 12px; margin: 0;">No roles found in data</p>';
+            } else {
+                availableRoles.forEach(role => {
+                    const label = document.createElement('label');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = role;
+                    checkbox.className = 'role-filter';
+                    checkbox.addEventListener('change', updatePreview);
+                    label.appendChild(checkbox);
+                    label.appendChild(document.createTextNode(role));
+                    roleFilters.appendChild(label);
+                });
+            }
+
+            // Populate Delegation filters
+            const delegationFilters = document.getElementById('delegationFilters');
+            delegationFilters.innerHTML = '';
+
+            if (availableDelegations.length === 0) {
+                delegationFilters.innerHTML = '<p style="color: #999; font-size: 12px; margin: 0;">No regions found in data</p>';
+            } else {
+                availableDelegations.forEach(delegation => {
+                    const label = document.createElement('label');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = delegation;
+                    checkbox.className = 'delegation-filter';
+                    checkbox.addEventListener('change', updatePreview);
+                    label.appendChild(checkbox);
+                    label.appendChild(document.createTextNode(delegation));
+                    delegationFilters.appendChild(label);
+                });
+            }
+
+            console.log('Filters populated:', { roles: availableRoles, delegations: availableDelegations });
+        }
+
+        async function updatePreview() {
+            if (!selectedFile) return;
+
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedRoles = Array.from(document.querySelectorAll('.role-filter:checked')).map(cb => cb.value);
+            const selectedDelegations = Array.from(document.querySelectorAll('.delegation-filter:checked')).map(cb => cb.value);
+            const sort = sortOrder.value;
+
+            if (searchTerm || selectedRoles.length > 0 || selectedDelegations.length > 0) {
+                try {
+                    // Fetch filtered records
+                    const response = await fetch('/api/preview-records', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            filename: selectedFile.name,
+                            search_name: searchTerm,
+                            selected_roles: selectedRoles,
+                            selected_delegations: selectedDelegations,
+                            sort_order: sort
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        filteredRecords = result.records;
+                        selectedRecordIndices = result.records.map((_, i) => i);  // Auto-select all by default
+
+                        // Display records with checkboxes
+                        displayRecordsSelection();
+
+                        const matchCountEl = document.getElementById('matchCount');
+                        matchCountEl.textContent = `✅ Found ${result.filtered} matching records (${result.total} total)`;
+                    }
+                } catch (error) {
+                    console.error('Error fetching preview:', error);
+                }
+            } else {
+                recordsSelection.classList.remove('show');
+            }
+        }
+
+        function displayRecordsSelection() {
+            if (filteredRecords.length === 0) {
+                recordsSelection.classList.remove('show');
+                return;
+            }
+
+            recordsSelection.classList.add('show');
+            recordsList.innerHTML = '';
+
+            filteredRecords.forEach((record, index) => {
+                const div = document.createElement('div');
+                div.className = 'record-checkbox';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `record_${index}`;
+                checkbox.value = index;
+                checkbox.checked = true;
+                checkbox.addEventListener('change', () => updateSelectionCount());
+
+                const label = document.createElement('label');
+                label.htmlFor = `record_${index}`;
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'record-name';
+                nameSpan.textContent = `${record.first_name} ${record.last_name}`;
+
+                const detailsSpan = document.createElement('span');
+                detailsSpan.className = 'record-details';
+                detailsSpan.textContent = `${record.role} • ${record.sport} • ${record.delegation}`;
+
+                label.appendChild(nameSpan);
+                label.appendChild(detailsSpan);
+
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                recordsList.appendChild(div);
+            });
+
+            updateSelectionCount();
+        }
+
+        function updateSelectionCount() {
+            selectedRecordIndices = Array.from(document.querySelectorAll('#recordsList input[type="checkbox"]:checked'))
+                .map(cb => parseInt(cb.value));
+            selectionCount.textContent = `${selectedRecordIndices.length} of ${filteredRecords.length} records selected`;
+        }
+
+        selectAllBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelectorAll('#recordsList input[type="checkbox"]').forEach(cb => cb.checked = true);
+            updateSelectionCount();
+        });
+
+        deselectAllBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelectorAll('#recordsList input[type="checkbox"]').forEach(cb => cb.checked = false);
+            updateSelectionCount();
+        });
+
+        searchInput.addEventListener('input', updatePreview);
+        sortOrder.addEventListener('change', updatePreview);
+
+        // Sizing preset and custom slider handling
+        const sizingPreset = document.getElementById('sizingPreset');
+        const marginSlider = document.getElementById('marginSlider');
+        const spacingSlider = document.getElementById('spacingSlider');
+        const marginValue = document.getElementById('marginValue');
+        const spacingValue = document.getElementById('spacingValue');
+        const previewCanvas = document.getElementById('previewCanvas');
+
+        // Sizing presets configuration
+        const presets = {
+            'compact': { margin: 0.10, spacing: 0.15 },
+            'standard': { margin: 0.30, spacing: 0.20 },
+            'spacious': { margin: 0.40, spacing: 0.30 }
+        };
+
+        // Update display values when sliders change
+        marginSlider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value).toFixed(2);
+            marginValue.textContent = val + '"';
+            sizingPreset.value = 'custom';
+            drawPreview();
+        });
+
+        spacingSlider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value).toFixed(2);
+            spacingValue.textContent = val + '"';
+            sizingPreset.value = 'custom';
+            drawPreview();
+        });
+
+        // Update sliders when preset changes
+        sizingPreset.addEventListener('change', (e) => {
+            const preset = presets[e.target.value];
+            if (preset) {
+                marginSlider.value = preset.margin.toFixed(2);
+                spacingSlider.value = preset.spacing.toFixed(2);
+                marginValue.textContent = preset.margin.toFixed(2) + '"';
+                spacingValue.textContent = preset.spacing.toFixed(2) + '"';
+                drawPreview();
+            }
+        });
+
+        // Draw live preview on canvas
+        function drawPreview() {
+            const canvas = previewCanvas;
+            const ctx = canvas.getContext('2d');
+
+            // Clear canvas
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Get current sizing values
+            const margin = parseFloat(marginSlider.value);
+            const spacing = parseFloat(spacingSlider.value);
+
+            // Letter page dimensions in inches: 8.5" × 11"
+            // Canvas resolution: scale to fit 100x130px
+            const pageWidth = 8.5;
+            const pageHeight = 11;
+            const credWidth = 3.85;
+            const credHeight = 5.0;
+
+            // Calculate scale factor to fit on canvas
+            const canvasScale = Math.min(
+                (canvas.width - 4) / pageWidth,
+                (canvas.height - 4) / pageHeight
+            );
+
+            const pageX = 2;
+            const pageY = 2;
+
+            // Draw page outline
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(
+                pageX,
+                pageY,
+                pageWidth * canvasScale,
+                pageHeight * canvasScale
+            );
+
+            // Calculate credential dimensions on canvas
+            const credWidthScaled = credWidth * canvasScale;
+            const credHeightScaled = credHeight * canvasScale;
+            const marginScaled = margin * canvasScale;
+            const spacingScaled = spacing * canvasScale;
+
+            // Draw 4 credentials in 2x2 grid
+            const startX = pageX + marginScaled;
+            const startY = pageY + marginScaled;
+
+            for (let row = 0; row < 2; row++) {
+                for (let col = 0; col < 2; col++) {
+                    const x = startX + (col * (credWidthScaled + spacingScaled));
+                    const y = startY + (row * (credHeightScaled + spacingScaled));
+
+                    // Draw credential background
+                    ctx.fillStyle = '#f0f0f0';
+                    ctx.fillRect(x, y, credWidthScaled, credHeightScaled);
+
+                    // Draw credential border
+                    ctx.strokeStyle = '#667eea';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(x, y, credWidthScaled, credHeightScaled);
+
+                    // Draw simple placeholder text
+                    ctx.fillStyle = '#666';
+                    ctx.font = '6px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Credential', x + credWidthScaled / 2, y + credHeightScaled / 2 - 2);
+                    ctx.fillText('Preview', x + credWidthScaled / 2, y + credHeightScaled / 2 + 4);
+                }
+            }
+
+            // Draw page dimensions label
+            ctx.fillStyle = '#999';
+            ctx.font = '7px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('8.5" × 11"', pageX + 2, canvas.height - 2);
+        }
+
+        // Initial preview draw
+        drawPreview();
+
+        // Event type selection
+        document.querySelectorAll('.event-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.event-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedEventType = btn.dataset.type;
+            });
+        });
+
+        // Form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!selectedFile) {
+                showStatus('❌ Please upload a file first', 'error');
+                return;
+            }
+
+            // Check if records were selected when filtering
+            if (filteredRecords.length > 0 && selectedRecordIndices.length === 0) {
+                showStatus('❌ Please select at least one record to generate credentials', 'error');
+                return;
+            }
+
+            const eventName = eventNameInput.value || 'Special Olympics Event';
+
+            // Get filter values
+            const selectedRoles = Array.from(document.querySelectorAll('.role-filter:checked')).map(cb => cb.value);
+            const selectedDelegations = Array.from(document.querySelectorAll('.delegation-filter:checked')).map(cb => cb.value);
+            const searchName = searchInput.value.trim();
+            const sort = sortOrder.value;
+            const sizingPreset = document.getElementById('sizingPreset').value;
+
+            showStatus(`<span class="spinner"></span>Generating ${selectedEventType} credentials...`, 'info');
+
+            try {
+                // Get reCAPTCHA token
+                const recaptchaToken = await getReCaptchaToken();
+
+                const response = await fetch('/api/generate-credentials', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filename: selectedFile.name,
+                        event_name: eventName,
+                        event_type: selectedEventType,
+                        search_name: searchName,
+                        selected_roles: selectedRoles,
+                        selected_delegations: selectedDelegations,
+                        sort_order: sort,
+                        selected_indices: selectedRecordIndices,  // Pass selected record indices
+                        sizing_preset: sizingPreset,  // Add sizing preset
+                        recaptcha_token: recaptchaToken  // Add reCAPTCHA token
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    generatedPdfFile = result.pdf_file;
+                    downloadBtn.classList.add('show');
+                    const filterMsg = result.filtered ? ` (filtered from ${result.total_records} total)` : '';
+                    showStatus(`✅ Success! Generated credentials for ${result.credentials_count} participants${filterMsg}`, 'success');
+                } else {
+                    showStatus(`❌ ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ ${error.message}`, 'error');
+            }
+        });
+
+        // Download PDF
+        downloadBtn.addEventListener('click', () => {
+            if (generatedPdfFile) {
+                window.location.href = `/api/download/${generatedPdfFile}`;
+            }
+        });
+
+        function showStatus(message, type) {
+            statusMessage.className = `status-message show ${type}`;
+            statusMessage.innerHTML = message;
+        }
+    </script>
+</body>
+</html>

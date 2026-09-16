@@ -107,7 +107,7 @@ def main():
             '--hidden-import=reportlab',
             '--hidden-import=requests',
             '--distpath=dist',
-            '--buildpath=build',
+            '--workpath=build',
             str(app_py)
         ]
         

@@ -101,11 +101,13 @@ def main():
             '--add-data=templates/Credential_Template.xlsx:templates',
             '--collect-all=flask',
             '--collect-all=reportlab',
+            '--collect-all=chardet',
             '--hidden-import=flask',
             '--hidden-import=pandas',
             '--hidden-import=openpyxl',
             '--hidden-import=reportlab',
             '--hidden-import=requests',
+            '--hidden-import=chardet',
             '--distpath=dist',
             '--workpath=build',
             str(app_py)
